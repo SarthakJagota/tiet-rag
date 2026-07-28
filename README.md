@@ -49,22 +49,22 @@ Evaluated on **367 questions** across 110 TIET policy PDFs using LLM-as-judge (b
 | Metric               | Vanilla RAG | No Reranking | Agentic RAG |
 |----------------------|-------------|--------------|-------------|
 | Correctness          | 55.86%      | 57.23%       | 43.87%      |
-| Relevance            | 73.02%      | —            | —           |
-| Groundedness         | 13.62%      | —            | —           |
-| Retrieval Relevance  | 63.76%      | —            | —           |
-| Specificity          | 70.84%      | —            | —           |
-| Conciseness          | 77.11%      | —            | —           |
-| Completeness         | 71.39%      | —            | —           |
+| Relevance            | 73.02%      | 51.20%       | 59.13%      |
+| Groundedness         | 13.62%      | 27.11%       | 5.45%       |
+| Retrieval Relevance  | 63.76%      | 66.87%       | 49.59%      |
+| Specificity          | 70.84%      | 58.43%       | 50.14%      |
+| Conciseness          | 77.11%      | 68.67%       | 64.03%      |
+| Completeness         | 71.39%      | 55.42%       | 55.59%      |
 
 ### Retrieval Quality (Recall@K)
 
 | K  | Vanilla RAG | Agentic RAG |
 |----|-------------|-------------|
-| 5  | 83.33%      | —           |
+| 5  | 83.33%      | 85.01%      |
 | 10 | 87.50%      | 90.74%      |
-| 20 | 90.83%      | —           |
+| 20 | 90.83%      | 92.92%      |
 
-**Key finding:** Agentic RAG improves Recall@10 by +3.24% through multi-hop retrieval but degrades generation quality with a 7B parameter model — synthesis quality scales with model size.
+**Key finding:** Agentic RAG consistently improves Recall@K (+3.24% at K=10) through multi-hop retrieval, but degrades generation quality — synthesis with a 7B parameter model loses precision. Vanilla RAG with reranking wins on most generation metrics.
 
 ---
 
