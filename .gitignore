@@ -1,0 +1,14 @@
+.env
+.streamlit/secrets.toml
+data/
+evaluation/*.csv
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+*.ipynb
+ragas_env/
+venv/
+env/
+*.dll
+*.pyd
