@@ -1,7 +1,8 @@
 .env
 .streamlit/secrets.toml
 data/
-evaluation/*.csv
+evaluation/generated_answers*.csv
+evaluation/_tune*.csv
 __pycache__/
 *.pyc
 *.pyo
