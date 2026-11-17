@@ -2,8 +2,6 @@
 
 An end-to-end Retrieval-Augmented Generation (RAG) system built over **110 TIET (Thapar Institute of Engineering & Technology) policy PDFs**, featuring cross-encoder reranking, adaptive K selection, and a comprehensive 7-metric evaluation framework.
 
-**[Live Demo](https://tiet-assistant.streamlit.app)** · **[GitHub](https://github.com/SarthakJagota/tiet-rag)**
-
 ---
 
 ## Features
