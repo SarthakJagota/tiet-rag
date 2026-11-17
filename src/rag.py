@@ -12,7 +12,7 @@ from embeddings import get_embedding_model
 from vectordb import load_vectordb
 from reranker import get_reranker, rerank, rerank_threshold, rerank_knee
 
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
 PROMPT_TEMPLATE = """
 You are an assistant for Thapar Institute of Engineering & Technology (TIET).

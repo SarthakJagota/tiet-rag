@@ -39,7 +39,8 @@ OUTPUT = os.path.join(os.path.dirname(__file__), "groundedness_scores.csv")
 
 llm = ChatOllama(
     model="llama3.2",
-    temperature=0
+    temperature=0,
+    num_ctx=16384,  # default window is too small for full retrieved context
 )
 
 
@@ -81,7 +82,7 @@ def score(row):
 
         response = llm.invoke(
             PROMPT.format(
-                context=str(row.get("context", ""))[:3000],
+                context=str(row.get("context", "")),
                 generated=row["generated_answer"],
             )
         ).content.strip()
