@@ -47,11 +47,13 @@ Evaluated on **367 questions** across 110 TIET policy PDFs using LLM-as-judge (b
 |----------------------|----------------|--------------|
 | Correctness          | 55.86%         | 57.23%       |
 | Relevance            | 73.02%         | 51.20%       |
-| Groundedness         | 13.62%         | 27.11%       |
+| Groundedness*        | 58.23%         | —            |
 | Retrieval Relevance  | 63.76%         | 66.87%       |
 | Specificity          | 70.84%         | 58.43%       |
 | Conciseness          | 77.11%         | 68.67%       |
 | Completeness         | 71.39%         | 55.42%       |
+
+\* Groundedness was re-checked on 79 questions with `openai/gpt-oss-120b` as judge, using the full retrieved context. The No Reranking column was evaluated on an earlier 166-question version of the dataset.
 
 ### Retrieval Quality (Recall@K)
 

@@ -28,7 +28,6 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import pandas as pd
-from langchain_ollama import ChatOllama
 
 
 
@@ -37,11 +36,7 @@ OUTPUT = os.path.join(os.path.dirname(__file__), "groundedness_scores.csv")
 
 
 
-llm = ChatOllama(
-    model="llama3.2",
-    temperature=0,
-    num_ctx=16384,  # default window is too small for full retrieved context
-)
+from judge import llm  # shared Groq judge with cache + retries
 
 
 

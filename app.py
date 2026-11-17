@@ -14,7 +14,7 @@ if hasattr(st, "secrets") and "GROQ_API_KEY" in st.secrets:
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
-from src.rag   import RAGPipeline
+from src.rag   import RAGPipeline, GROQ_MODEL
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -124,7 +124,7 @@ header    { visibility: hidden; }
 
 # ── Load pipelines ─────────────────────────────────────────────────────────────
 @st.cache_resource(show_spinner="⚙️ Loading RAG pipeline...")
-def load_vanilla():
+def load_vanilla(model=GROQ_MODEL):  # model in the cache key: a model change rebuilds the pipeline
     return RAGPipeline(top_k=8, retrieve_k=25)
 
 # ── Suggested questions ────────────────────────────────────────────────────────
@@ -268,7 +268,13 @@ with tab_chat:
                                  "text":   d.page_content} for d in docs]
 
                 except Exception as e:
-                    elapsed, answer, sources, chunks = time.time()-t0, f"❌ Error: {e}", [], []
+                    err = str(e)
+                    if "429" in err or "rate limit" in err.lower():
+                        msg = "⏳ The demo has used up its free daily LLM quota. Please try again in a little while."
+                    else:
+                        msg = "❌ Something went wrong while generating the answer. Please try again."
+                    print(f"Answer generation failed: {err}")  # full error goes to the server log
+                    elapsed, answer, sources, chunks = time.time()-t0, msg, [], []
 
             st.markdown(answer)
 
@@ -323,7 +329,7 @@ with tab_metrics:
     metrics = [
         ("Correctness",         load_pct("correctness_scores.csv",        "correctness"),        "✅"),
         ("Relevance",           load_pct("relevance_scores.csv",           "relevance"),          "🎯"),
-        ("Groundedness",        load_pct("groundedness_scores.csv",        "groundedness"),       "⚓"),
+        ("Groundedness*",       load_pct("groundedness_recheck.csv",       "groundedness"),       "⚓"),
         ("Retrieval Relevance", load_pct("retrieval_relevance_scores.csv", "retrieval_relevance"),"🔍"),
     ]
 
@@ -346,6 +352,7 @@ with tab_metrics:
                     <div class="metric-label">{label}</div>
                 </div>""", unsafe_allow_html=True)
 
+    st.caption("*Groundedness: 79-question re-check judged by gpt-oss-120b with the full retrieved context.")
     st.markdown("---")
 
     col_left, col_right = st.columns(2)

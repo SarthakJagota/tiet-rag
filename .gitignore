@@ -13,3 +13,4 @@ venv/
 env/
 *.dll
 *.pyd
+evaluation/judge_cache/

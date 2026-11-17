@@ -216,7 +216,9 @@ print("\n" + "=" * 70)
 print("                 FINAL RAG EVALUATION RESULTS")
 print("=" * 70)
 
-print("Dataset                     : eval_dataset.json (98) + eval_dataset_cleaned.csv (68) = 166 Questions")
+print("Dataset                     : tiet_rag_filtered.csv (367 Questions)")
+from judge import JUDGE_MODEL
+print(f"Judge                       : {JUDGE_MODEL}")
 
 print("\n---------------- RESPONSE GENERATION ----------------")
 
