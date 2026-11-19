@@ -19,6 +19,10 @@ def build_vectordb(chunks, embedding_model, persist_dir=PERSIST_DIR):
 
 
 def load_vectordb(embedding_model, persist_dir=PERSIST_DIR):
+    if not os.path.exists(persist_dir):
+        raise FileNotFoundError(
+            f"ChromaDB directory not found at '{persist_dir}'. Run 'python src/build_db.py' first."
+        )
     return Chroma(
         collection_name=COLLECTION_NAME,
         embedding_function=embedding_model,

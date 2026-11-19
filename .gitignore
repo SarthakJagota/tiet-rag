@@ -1,6 +1,8 @@
 .env
 .streamlit/secrets.toml
 data/
+Data/
+evaluation/old_llama_run/
 evaluation/generated_answers*.csv
 evaluation/_tune*.csv
 __pycache__/
@@ -9,6 +11,7 @@ __pycache__/
 .ipynb_checkpoints/
 *.ipynb
 ragas_env/
+.venv/
 venv/
 env/
 *.dll

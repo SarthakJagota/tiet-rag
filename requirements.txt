@@ -1,4 +1,4 @@
-﻿streamlit
+streamlit
 langchain
 langchain-core
 langchain-groq
@@ -10,6 +10,7 @@ sentence-transformers
 torch
 transformers
 pypdf
+pdfplumber
 pandas
 numpy
 python-dotenv

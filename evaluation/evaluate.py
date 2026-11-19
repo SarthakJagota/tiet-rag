@@ -48,11 +48,13 @@ def main(rerank=True):
     existing = {}
     if os.path.exists(output):
         df = pd.read_csv(output)
+        df["question"] = df["question"].astype(str).str.strip()
+        df = df[df["question"].isin(valid_questions)]
         if "model" in df.columns:
-            df["question"] = df["question"].astype(str).str.strip()
-            df = df[df["question"].isin(valid_questions) & (df["model"] == GROQ_MODEL)]
+            df = df[df["model"] == GROQ_MODEL]
+        if "generated_answer" in df.columns:
             df = df[~df["generated_answer"].astype(str).str.startswith("ERROR")]
-            existing = {r["question"]: r for r in df.to_dict("records")}
+        existing = {r["question"]: r for r in df.to_dict("records")}
     print(f"Already done with this model: {len(existing)}, remaining: {len(data) - len(existing)}\n")
 
     rag = RAGPipeline()

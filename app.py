@@ -14,7 +14,7 @@ if hasattr(st, "secrets") and "GROQ_API_KEY" in st.secrets:
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
-from src.rag   import RAGPipeline, GROQ_MODEL
+from src.rag import RAGPipeline, AdaptiveRAGPipeline, GROQ_MODEL
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -124,8 +124,13 @@ header    { visibility: hidden; }
 
 # ── Load pipelines ─────────────────────────────────────────────────────────────
 @st.cache_resource(show_spinner="⚙️ Loading RAG pipeline...")
-def load_vanilla(model=GROQ_MODEL):  # model in the cache key: a model change rebuilds the pipeline
-    return RAGPipeline(top_k=8, retrieve_k=25)
+def load_pipeline(strategy="Vanilla (Fixed Top-8)", model=GROQ_MODEL):
+    if strategy == "Adaptive (Knee Detection)":
+        return AdaptiveRAGPipeline(mode="knee", min_k=3, max_k=15, retrieve_k=50)
+    elif strategy == "Adaptive (Score Threshold)":
+        return AdaptiveRAGPipeline(mode="threshold", ce_threshold=0.0, min_k=3, max_k=15, retrieve_k=50)
+    else:
+        return RAGPipeline(top_k=8, retrieve_k=25)
 
 # ── Suggested questions ────────────────────────────────────────────────────────
 SUGGESTIONS = [
@@ -150,8 +155,19 @@ with st.sidebar:
     st.divider()
 
     st.markdown("### ⚙️ Settings")
-    show_sources = st.toggle("📄 Show sources",         value=True)
-    show_chunks  = st.toggle("🔍 Show retrieved chunks", value=False)
+    rag_strategy = st.selectbox(
+        "🎯 Retrieval Strategy",
+        options=[
+            "Vanilla (Fixed Top-8)",
+            "Adaptive (Knee Detection)",
+            "Adaptive (Score Threshold)",
+        ],
+        index=0,
+        help="Vanilla uses fixed top-8 cross-encoder reranking. Adaptive modes dynamically choose chunk count.",
+    )
+    enable_memory = st.toggle("🧠 Conversational memory", value=True, help="Reformulates follow-up queries using prior chat context.")
+    show_sources  = st.toggle("📄 Show sources",          value=True)
+    show_chunks   = st.toggle("🔍 Show retrieved chunks", value=False)
 
     st.divider()
     st.markdown("### 📊 Session Stats")
@@ -182,7 +198,7 @@ with st.sidebar:
     st.markdown("### 📈 Model Performance")
     st.caption("Correctness : 55.86%")
     st.caption("Relevance   : 73.02%")
-    st.caption("Recall@10   : 87.50%")
+    st.caption("Recall@10   : 90.74%")
 
 # ── Tabs ───────────────────────────────────────────────────────────────────────
 tab_chat, tab_metrics, tab_about = st.tabs(["💬 Chat", "📊 Metrics", "ℹ️ About"])
@@ -255,34 +271,40 @@ with tab_chat:
             st.markdown(query_to_run)
 
         with st.chat_message("assistant", avatar="🎓"):
-            with st.spinner("🔍 Searching TIET documents..."):
-                t0 = time.time()
-                try:
-                    pipeline     = load_vanilla()
-                    answer, docs = pipeline.answer(query_to_run)
+            t0 = time.time()
+            search_query_used = query_to_run
+            try:
+                pipeline = load_pipeline(strategy=rag_strategy)
+                history = st.session_state.messages[:-1] if enable_memory else None
+                with st.spinner("🔍 Searching TIET documents..."):
+                    stream, docs, search_query_used = pipeline.stream_answer(query_to_run, chat_history=history)
 
-                    elapsed  = time.time() - t0
-                    sources  = sorted(set(d.metadata.get("source", "?") for d in docs))
-                    chunks   = [{"source": d.metadata.get("source","?"),
-                                 "page":   d.metadata.get("page","?"),
-                                 "text":   d.page_content} for d in docs]
+                if enable_memory and search_query_used != query_to_run:
+                    st.caption(f"🔍 *Standalone query:* `{search_query_used}`")
 
-                except Exception as e:
-                    err = str(e)
-                    if "429" in err or "rate limit" in err.lower():
-                        msg = "⏳ The demo has used up its free daily LLM quota. Please try again in a little while."
-                    else:
-                        msg = "❌ Something went wrong while generating the answer. Please try again."
-                    print(f"Answer generation failed: {err}")  # full error goes to the server log
-                    elapsed, answer, sources, chunks = time.time()-t0, msg, [], []
+                answer = st.write_stream(stream)
+                elapsed = time.time() - t0
+                sources = sorted(set(d.metadata.get("source", "?") for d in docs))
+                chunks = [{"source": d.metadata.get("source", "?"),
+                           "page":   d.metadata.get("page", "?"),
+                           "text":   d.page_content} for d in docs]
 
-            st.markdown(answer)
+            except Exception as e:
+                err = str(e)
+                if "429" in err or "rate limit" in err.lower():
+                    msg = "⏳ The demo has used up its free daily LLM quota. Please try again in a little while."
+                else:
+                    msg = "❌ Something went wrong while generating the answer. Please try again."
+                print(f"Answer generation failed: {err}")  # full error goes to the server log
+                elapsed, answer, sources, chunks = time.time()-t0, msg, [], []
+                st.markdown(answer)
 
             stats_html = f"""
             <div class="stats-row">
                 <span class="stat-chip">⏱️ {elapsed:.1f}s</span>
                 <span class="stat-chip">📚 {len(sources)} sources</span>
                 <span class="stat-chip">📝 {len(answer.split())} words</span>
+                <span class="stat-chip">🎯 {rag_strategy.split()[0]}</span>
             </div>"""
             st.markdown(stats_html, unsafe_allow_html=True)
 
@@ -314,7 +336,7 @@ with tab_chat:
 # ════════════════════════════════════════════════════════════════════════════════
 with tab_metrics:
     st.markdown("## 📊 Evaluation Results")
-    st.caption("Evaluated on 367 TIET policy questions using LLM-as-judge (llama3.2)")
+    st.caption("Evaluated on 367 TIET policy questions using LLM-as-judge (llama3.2; groundedness re-checked with gpt-oss-120b)")
 
     import pandas as pd, os
     BASE = os.path.join(os.path.dirname(__file__), "evaluation")
@@ -423,7 +445,7 @@ Answer + Sources
 | Component | Technology |
 |---|---|
 | LLM | Groq gpt-oss-120b |
-| Eval judge | Ollama llama3.2 (local) |
+| Eval judge | llama3.2 (groundedness: gpt-oss-120b) |
 | Embeddings | all-MiniLM-L6-v2 |
 | Vector Store | ChromaDB |
 | Reranker | cross-encoder/ms-marco-MiniLM-L-6-v2 |

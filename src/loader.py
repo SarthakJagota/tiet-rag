@@ -47,7 +47,10 @@ def load_pdfs_from_dir(data_dir):
             try:
                 docs = load_pdf(pdf_path)
                 documents.extend(docs)
-                print(f"  Loaded {filename} ({len(docs)} pages)")
+                if docs:
+                    print(f"  Loaded {filename} ({len(docs)} pages)")
+                else:
+                    print(f"  Warning: {filename} has 0 extractable text pages (scanned/empty)")
             except Exception as e:
                 print(f"  Failed to load {pdf_path}: {e}")
 

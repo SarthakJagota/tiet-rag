@@ -21,7 +21,17 @@ if EVAL_DIR not in sys.path:
     sys.path.insert(0, EVAL_DIR)
 
 import pandas as pd
-from langchain_ollama import ChatOllama
+try:
+    from langchain_groq import ChatGroq
+    from src.rag import GROQ_MODEL
+    _default_generator = ChatGroq(model=GROQ_MODEL, temperature=0, max_retries=5)
+except Exception:
+    try:
+        from langchain_ollama import ChatOllama
+        _default_generator = ChatOllama(model="llama3.2", temperature=0, timeout=120)
+    except Exception:
+        _default_generator = None
+
 from src.embeddings import get_embedding_model
 from src.vectordb import load_vectordb
 from src.reranker import get_reranker, rerank
@@ -130,7 +140,8 @@ def generate_answers(data, vectordb, reranker, llm, top_k, retrieve_k, use_reran
 def run_scorers(answers_csv, tmp_prefix):
     """Run all 5 individual scorer scripts on answers_csv. Returns dict of metric -> score%."""
     import correctness, relevance, groundedness, retrieval_relevance, generation_quality
-    _llm = ChatOllama(model="llama3.2", temperature=0, timeout=120)
+    import judge
+    _llm = judge.llm
     for mod in [correctness, relevance, groundedness, retrieval_relevance, generation_quality]:
         mod.llm = _llm
 
@@ -266,7 +277,7 @@ def main():
     embedding_model = get_embedding_model()
     vectordb        = load_vectordb(embedding_model)
     reranker_model  = get_reranker()
-    llm             = ChatOllama(model="llama3.2", temperature=0, timeout=120)
+    llm             = _default_generator
     print("  Ready.\n")
 
     rerank_rows   = []

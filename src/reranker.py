@@ -1,10 +1,17 @@
+import os
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+
 from sentence_transformers import CrossEncoder
 
 MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 
 def get_reranker():
-    return CrossEncoder(MODEL_NAME)
+    try:
+        return CrossEncoder(MODEL_NAME, local_files_only=True)
+    except Exception:
+        return CrossEncoder(MODEL_NAME)
 
 
 def rerank(reranker, query, docs, top_k):
