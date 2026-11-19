@@ -2,7 +2,7 @@
 
 An end-to-end Retrieval-Augmented Generation (RAG) system built over **110 TIET (Thapar Institute of Engineering & Technology) policy PDFs**, featuring cross-encoder reranking, adaptive K selection, and a comprehensive 7-metric evaluation framework.
 
-**[▶ Watch the Demo Video](https://drive.google.com/file/d/1IbhLEe6DkndbRiFhdEiTWD_5MsVF2vCZ/view?usp=sharing)**
+**[▶ Watch the Demo Video](https://drive.google.com/file/d/1lcgUY-FYY1jipOcPvbUJcWk7kDqm1nDZ/view?usp=sharing)**
 
 ---
 
