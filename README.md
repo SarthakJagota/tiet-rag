@@ -44,7 +44,7 @@ Answer + Sources
 
 ## Evaluation Results
 
-Evaluated on **367 questions** across 110 TIET policy PDFs using LLM-as-judge (binary 0/1 scoring, `llama3.2` judge unless noted).
+Evaluated on **367 questions** across 110 TIET policy PDFs using LLM-as-judge (binary 0/1 scoring, `llama3.2` judge unless noted). Answers in the With Reranking column were generated with Groq Llama 3.3 70B, before the app moved to `gpt-oss-120b`.
 
 ### Generation Quality
 
@@ -69,7 +69,7 @@ Evaluated on **367 questions** across 110 TIET policy PDFs using LLM-as-judge (b
 | 10 | 90.74% |
 | 20 | 92.92% |
 
-**Key finding:** Cross-encoder reranking raises relevance from 51.20% to 73.02% and completeness from 55.42% to 71.39%, and improves specificity and conciseness, at a small cost in correctness (−1.4 points).
+**Key findings:** The retriever finds a correct source document in the top 10 for 90.7% of questions. The reranked pipeline scores higher on relevance (73.02% vs 51.20%) and completeness (71.39% vs 55.42%) than the no-rerank baseline, but the baseline also used a smaller generator and an older question set, so this gap is not attributable to reranking alone. A clean comparison would re-run both configurations with the same generator and questions.
 
 ---
 

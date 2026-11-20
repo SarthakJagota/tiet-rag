@@ -459,7 +459,8 @@ Answer + Sources
 - Categories: Admissions, Curriculum, Hostel, Faculty, Research...
 
 ### 📊 Key Findings
-- Cross-encoder reranking → **+21.8 pts relevance** (51.2% → 73.0%) and **+16.0 pts completeness** vs no reranking
+- Retrieval finds a correct source in the top 10 for **90.7%** of questions
+- Reranked pipeline: **73.0% relevance**, **71.4% completeness**
 - Adaptive K selection → better retrieval for complex queries
 - Best config: top_k=8, retrieve_k=25 with cross-encoder reranking
         """)
